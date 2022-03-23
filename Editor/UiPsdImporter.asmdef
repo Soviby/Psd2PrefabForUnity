@@ -1,0 +1,18 @@
+{
+    "name": "UiPsdImporter",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c522c64a859e42f41a3366907610963e"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
