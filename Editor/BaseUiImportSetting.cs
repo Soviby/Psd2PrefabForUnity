@@ -4,7 +4,7 @@ using UnityEngine;
 namespace QTool.Psd2Ui
 {
 
-    //[CreateAssetMenu(menuName = "工具/基础UI生成设置",fileName ="基础UI生成设置",order =0)]
+    //[CreateAssetMenu(menuName = "宸ュ叿/鍩虹UI鐢熸垚璁剧疆",fileName ="鍩虹UI鐢熸垚璁剧疆",order =0)]
     public class BaseUiImportSetting : ScriptableObject
     {
         public List<Prefab> prefabList = new List<Prefab>();

@@ -12,15 +12,15 @@ namespace QTool.Psd2Ui
 {
     public static class Impoter
     {
-        [MenuItem("Assets/工具/基础UI生成设置", priority = 0)]
+        [MenuItem("Assets/宸ュ叿/鍩虹UI鐢熸垚璁剧疆", priority = 0)]
         static void CreateBaseUIImportSetting()
         {
             var uiObj = ScriptableObject.CreateInstance<BaseUiImportSetting>();
-            AssetDatabase.CreateAsset(uiObj, Path.Combine(Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)),  "基础UI生成设置.asset"));
+            AssetDatabase.CreateAsset(uiObj, Path.Combine(Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)),  "鍩虹UI鐢熸垚璁剧疆.asset"));
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
-        [MenuItem("Assets/工具/psd生成UI导入设置 %u",priority =0)]
+        [MenuItem("Assets/宸ュ叿/psd鐢熸垚UI瀵煎叆璁剧疆 %u",priority =0)]
         static void CreateUIImportSetting()
         {
             foreach (var obj in Selection.objects)
@@ -38,7 +38,7 @@ namespace QTool.Psd2Ui
                 }
                 else
                 {
-                    Debug.LogError(path + "文件不是psd或psb文件无法生成UI");
+                    Debug.LogError(path + "鏂囦欢涓嶆槸psd鎴杙sb鏂囦欢鏃犳硶鐢熸垚UI");
                 }
 
             }

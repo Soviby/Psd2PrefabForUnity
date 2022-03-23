@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab2e53987e4cafe4b91e62d262a1a858, type: 3}
+  m_Name: EmailTestPanel
+  m_EditorClassIdentifier: 
+  prefabList: []
+  fontList:
+  - key: FZY3JW--GB1-0
+    font: {fileID: 0}
+    YOffset: 0
+  uiSizeScale: 1
+  textScale: 1
+  autoanchoredRate: 0.1
+  parentSetting: {fileID: 0}
+  psdFile: {fileID: 2800000, guid: b44f424c49861a94d8cfe9e9891f1e71, type: 3}
+  toPrefabUi: []

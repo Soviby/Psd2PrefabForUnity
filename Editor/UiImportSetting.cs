@@ -1,3 +1,4 @@
+using GameCore.UI;
 using PhotoshopFile;
 using System;
 using System.Collections.Generic;
@@ -14,14 +15,14 @@ namespace QTool.Psd2Ui
         string Key { get; set; }
     }
     [System.Serializable]
-    public class FontRef :IKey
+    public class FontRef : IKey
     {
         public string Key { get => key; set => key = value; }
         public string key;
         [UnityEngine.Serialization.FormerlySerializedAs("obj")]
         public Font font;
-        [Range(-0.5f,0.5f)]
-        public float YOffset=0;
+        [Range(-0.5f, 0.5f)]
+        public float YOffset = 0;
     }
     [System.Serializable]
     public class Prefab : IKey
@@ -31,13 +32,33 @@ namespace QTool.Psd2Ui
         [UnityEngine.Serialization.FormerlySerializedAs("obj")]
         public GameObject prefab;
     }
+
+    public enum LayerType
+    {
+        img,
+        text
+    }
+
+    public class LayerForUnity
+    {
+        public LayerType layerType;
+        public string flag;
+        public Type componentType;
+    }
+
     public class UiImportSetting : BaseUiImportSetting
     {
+        public static Dictionary<LayerType, LayerForUnity> LayerForUnityMap = new Dictionary<LayerType, LayerForUnity>()
+        {
+            {LayerType.img,new LayerForUnity(){ layerType = LayerType.img,componentType= typeof(ExtImage)}},
+            {LayerType.text,new LayerForUnity(){ layerType = LayerType.text,componentType= typeof(Text)}},
+        };
+
         public BaseUiImportSetting parentSetting;
         [HideInInspector]
         [SerializeField]
         private UnityEngine.Object psdFile;
-      
+
         public float UiSizeScale
         {
             get
@@ -63,7 +84,7 @@ namespace QTool.Psd2Ui
         public Action SavePrefabAction;
         public Action LoadSpriteAction;
         [HideInInspector]
-        public List<RectTransform> toPrefabUi=new List<RectTransform>();
+        public List<RectTransform> toPrefabUi = new List<RectTransform>();
 
         public string AssetPath
         {
@@ -86,8 +107,7 @@ namespace QTool.Psd2Ui
                 return Path.Combine(RootPath, "BaseResources");
             }
         }
-        
-       
+
         public void Init(UnityEngine.Object psdFile)
         {
             this.psdFile = psdFile;
@@ -104,9 +124,9 @@ namespace QTool.Psd2Ui
             foreach (var layer in psd.Layers)
             {
                 //var name = layer.TrueName();
-                if (layer.Name.Contains("=&prefab") && !baseList.Contains(layer.TrueName())) 
+                if (layer.Name.Contains("=&prefab") && !baseList.Contains(layer.TrueName()))
                 {
-                    prefabList.CheckGet(layer.TrueName(),parentSetting?.prefabList);
+                    prefabList.CheckGet(layer.TrueName(), parentSetting?.prefabList);
                 }
                 else if (layer.Name.Contains("=text["))
                 {
@@ -114,11 +134,11 @@ namespace QTool.Psd2Ui
                     var endIndex = layer.Name.IndexOf("]");
                     var infos = layer.Name.Substring(startIndex, endIndex - startIndex).Split('|');
                     var font = infos[1];
-                    fontList.CheckGet( font,parentSetting?.fontList );
+                    fontList.CheckGet(font, parentSetting?.fontList);
                 }
             }
         }
-        [ContextMenu("…˙≥…UI‘§÷∆ÃÂ")]
+        [ContextMenu("ÁîüÊàêUIÈ¢ÑÂà∂‰Ωì")]
         public void CreateUIPrefab()
         {
             if (!Directory.Exists(RootPath))
@@ -144,11 +164,11 @@ namespace QTool.Psd2Ui
         }
 
     }
-    #region Õÿ’π 
+    #region ÊãìÂ±ï 
 
     public static class UiPsdImporterExtends
     {
-        public static T CheckGet<T>(this List<T> objList, string key, List<T> parentList = null) where T : IKey,new() 
+        public static T CheckGet<T>(this List<T> objList, string key, List<T> parentList = null) where T : IKey, new()
         {
             foreach (var kv in objList)
             {
@@ -196,7 +216,7 @@ namespace QTool.Psd2Ui
         {
             return layer.Rect.Width == 0 || layer.Rect.Height == 0;
         }
-        public static LayerInfo GetInfo(this Layer layer,params string[] keys)
+        public static LayerInfo GetInfo(this Layer layer, params string[] keys)
         {
             foreach (var info in layer.AdditionalInfo)
             {
@@ -210,7 +230,10 @@ namespace QTool.Psd2Ui
             }
             return null;
         }
-
+        public static LayerForUnity GetLayerForUnity(this UiImportSetting psdUi, LayerType layerType)
+        {
+            return UiImportSetting.LayerForUnityMap.ContainsKey(layerType) ? UiImportSetting.LayerForUnityMap[layerType] : null;
+        }
 
         public static RectTransform CreateUIPrefabRoot(this UiImportSetting psdUi)
         {
@@ -221,7 +244,7 @@ namespace QTool.Psd2Ui
             var psd = new PsdFile(psdUi.AssetPath, new LoadContext { Encoding = System.Text.Encoding.Default });
             var name = Path.GetFileNameWithoutExtension(psdUi.AssetPath);
             var root = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
-            root.sizeDelta = new Vector2(psd.ColumnCount, psd.RowCount)*psdUi.UiSizeScale;
+            root.sizeDelta = new Vector2(psd.ColumnCount, psd.RowCount) * psdUi.UiSizeScale;
             foreach (var layer in psd.Layers)
             {
                 var parentUi = groupStack.Count > 0 ? groupStack.Peek() : root;
@@ -241,7 +264,7 @@ namespace QTool.Psd2Ui
                             case LayerSectionType.OpenFolder:
                             case LayerSectionType.ClosedFolder:
                                 {
-                                    //≤„º∂ø™∆Ù±Í÷æ
+                                    //Â±ÇÁ∫ßÂºÄÂêØÊ†áÂøó
                                     var groupUI = groupStack.Pop();
                                     Bounds bounds = new Bounds();
                                     var childList = new List<RectTransform>();
@@ -285,12 +308,12 @@ namespace QTool.Psd2Ui
                                 break;
                             case LayerSectionType.SectionDivider:
                                 {
-                                    //≤„º∂Ω· ¯±Í÷æ
+                                    //Â±ÇÁ∫ßÁªìÊùüÊ†áÂøó
                                     groupStack.Push(psdUi.CreateGroup(layer, parentUi));
                                 }
                                 break;
                             default:
-                                Debug.LogError("Œ¥Ω‚Œˆµƒ≤„º∂¬ﬂº≠" + groupInfo.SectionType);
+                                Debug.LogError("Êú™Ëß£ÊûêÁöÑÂ±ÇÁ∫ßÈÄªËæë" + groupInfo.SectionType);
                                 break;
                         }
                     }
@@ -322,8 +345,6 @@ namespace QTool.Psd2Ui
         {
             return layer.Name.Contains("=");
         }
-
-        // static List<GameObject> destoryList = new List<GameObject>();
         public static bool ChangeToPrefab(this UiImportSetting psdUi, RectTransform tempUi)
         {
             if (tempUi == null) return true;
@@ -338,7 +359,6 @@ namespace QTool.Psd2Ui
                     psdUi.toPrefabUi.Add(tempUi);
                 }
 
-                // Debug.LogError("»±…Ÿ‘§÷∆ÃÂ°æ" + tempUi.name + "°ø");
                 return false;
             }
 
@@ -420,16 +440,16 @@ namespace QTool.Psd2Ui
                     child.offsetMin = new Vector2(leftDonwOffset.x, child.offsetMin.y);
                     child.anchorMin = new Vector2(0, child.anchorMin.y);
                 }
-                else if(rightUpOffset.x<widthCheck*2&&leftDonwOffset.x>1-widthCheck*2+child.Width()/2)
+                else if (rightUpOffset.x < widthCheck * 2 && leftDonwOffset.x > 1 - widthCheck * 2 + child.Width() / 2)
                 {
                     child.offsetMax = new Vector2(-rightUpOffset.x, child.offsetMax.y);
                     child.anchorMax = new Vector2(1, child.anchorMax.y);
-                    child.offsetMin = new Vector2(-(rightUpOffset.x+child.Width()), child.offsetMin.y);
+                    child.offsetMin = new Vector2(-(rightUpOffset.x + child.Width()), child.offsetMin.y);
                     child.anchorMin = new Vector2(1, child.anchorMin.y);
                 }
                 else if (rightUpOffset.x > 1 - widthCheck * 2 + child.Width() / 2 && leftDonwOffset.x < widthCheck * 2)
                 {
-                    child.offsetMax = new Vector2(leftDonwOffset.x+child.Width(), child.offsetMax.y);
+                    child.offsetMax = new Vector2(leftDonwOffset.x + child.Width(), child.offsetMax.y);
                     child.anchorMax = new Vector2(0, child.anchorMax.y);
                     child.offsetMin = new Vector2(leftDonwOffset.x, child.offsetMin.y);
                     child.anchorMin = new Vector2(0, child.anchorMin.y);
@@ -441,14 +461,14 @@ namespace QTool.Psd2Ui
                     child.offsetMin = new Vector2(child.offsetMin.x, leftDonwOffset.y);
                     child.anchorMin = new Vector2(child.anchorMin.x, 0);
                 }
-                else if(rightUpOffset.y < heightCheck*2 && leftDonwOffset.y >1- heightCheck*2+child.Height()/2)
+                else if (rightUpOffset.y < heightCheck * 2 && leftDonwOffset.y > 1 - heightCheck * 2 + child.Height() / 2)
                 {
                     child.offsetMax = new Vector2(child.offsetMax.x, -rightUpOffset.y);
                     child.anchorMax = new Vector2(child.anchorMax.x, 1);
-                    child.offsetMin = new Vector2(child.offsetMin.x, -(rightUpOffset.y+child.Height()));
+                    child.offsetMin = new Vector2(child.offsetMin.x, -(rightUpOffset.y + child.Height()));
                     child.anchorMin = new Vector2(child.anchorMin.x, 1);
                 }
-                else if (rightUpOffset.y > 1 - heightCheck * 2 + child.Height() / 2 && leftDonwOffset.y<heightCheck*2 )
+                else if (rightUpOffset.y > 1 - heightCheck * 2 + child.Height() / 2 && leftDonwOffset.y < heightCheck * 2)
                 {
                     child.offsetMax = new Vector2(child.offsetMax.x, leftDonwOffset.y + child.Height());
                     child.anchorMax = new Vector2(child.anchorMax.x, 0);
@@ -464,8 +484,8 @@ namespace QTool.Psd2Ui
         public static RectTransform CreateUIBase(this UiImportSetting psdUi, Layer layer, RectTransform parent = null)
         {
             var ui = new GameObject(layer.TrueName(), typeof(RectTransform)).GetComponent<RectTransform>();
-            ui.sizeDelta = new Vector2(layer.Rect.Width, layer.Rect.Height)*psdUi.UiSizeScale;
-            ui.position = layer.Center()*psdUi.UiSizeScale - parent.rect.size / 2;
+            ui.sizeDelta = new Vector2(layer.Rect.Width, layer.Rect.Height) * psdUi.UiSizeScale;
+            ui.position = layer.Center() * psdUi.UiSizeScale - parent.rect.size / 2;
             ui.SetParent(parent);
             ui.gameObject.SetActive(layer.Visible);
             return ui;
@@ -479,7 +499,7 @@ namespace QTool.Psd2Ui
         }
         public static void CreateImage(this UiImportSetting psdUi, Layer layer, RectTransform parent = null)
         {
-            if (!layer.HaveFlag()) return ;
+            if (!layer.HaveFlag()) return;
             if (layer.IsRectZero())
             {
                 Debug.LogError($"layout of {layer.Name} is empty.");
@@ -490,7 +510,8 @@ namespace QTool.Psd2Ui
             var tex = CreateTexture(layer);
             if (tex != null)
             {
-                var image = ui.gameObject.AddComponent<Image>();
+                var layoutForUnity = psdUi.GetLayerForUnity(LayerType.img);
+                var image = ui.gameObject.AddComponent(layoutForUnity.componentType) as Image;
                 image.color = new Color(1, 1, 1, layer.Opacity / 255f);
                 psdUi.GetSprite(layer, (sprite) =>
                 {
@@ -520,25 +541,26 @@ namespace QTool.Psd2Ui
             }
             else
             {
-                Debug.LogWarning("Œƒ◊÷≤„ »±…Ÿ◊÷ÃÂ¥Û–°µ»œ‡πÿ–≈œ¢ «Îœ»‘⁄Ps÷–‘À––Ω≈±æ(…˙≥…UGUI∏Ò ΩŒƒº˛.jsx)");
+                Debug.LogWarning("ÊñáÂ≠óÂ±Ç Áº∫Â∞ëÂ≠ó‰ΩìÂ§ßÂ∞èÁ≠âÁõ∏ÂÖ≥‰ø°ÊÅØ ËØ∑ÂÖàÂú®Ps‰∏≠ËøêË°åËÑöÊú¨(ÁîüÊàêUGUIÊ†ºÂºèÊñá‰ª∂.jsx)");
             }
-
-            var textUi = ui.gameObject.AddComponent<Text>();
+            var layoutForUnity = psdUi.GetLayerForUnity(LayerType.text);
+            var textUi = ui.gameObject.AddComponent(layoutForUnity.componentType) as Text;
             textUi.text = text;
             var parentFontList = psdUi.parentSetting?.fontList;
-            var fongSetting= psdUi.fontList.CheckGet(font, parentFontList);
+            var fongSetting = psdUi.fontList.CheckGet(font, parentFontList);
             textUi.fontSize = (int)(size * psdUi.TextScale);
             var tempFont = fongSetting.font;
             if (parentFontList != null)
             {
-                tempFont = parentFontList.Find((f)=> {
+                tempFont = parentFontList.Find((f) =>
+                {
                     return f.Key.Equals(font);
                 })?.font;
-            } 
+            }
 
             if (tempFont == null)
             {
-                Debug.LogError("Œ¥÷∏∂®◊÷ÃÂ°æ" + font + "°ø");
+                Debug.LogError("Êú™ÊåáÂÆöÂ≠ó‰Ωì„Äê" + font + "„Äë");
             }
             else
             {
@@ -562,19 +584,36 @@ namespace QTool.Psd2Ui
 
             if (tex != null)
             {
-                string path = Path.Combine(psdUi.ResourcesPath, psdUi.name + "_" + tex.name + ".png");
-                File.WriteAllBytes(path, tex.EncodeToPNG());
-                UnityEngine.Object.DestroyImmediate(tex);
-                psdUi.LoadSpriteAction += () =>
+                // Âà§Êñ≠È°πÁõÆ‰∏≠ÊòØÂê¶Â∑≤ÁªèÂ≠òÂú®ÔºåËã•Â≠òÂú®ÂàôÁõ¥Êé•Ë∞ÉÁî® callBack
+                string[] guids = AssetDatabase.FindAssets(tex.name, new string[]
                 {
-                    var sprite = psdUi.LoadSprite(path);
-                    if (sprite != null)
+                    "Assets/Res/UI/AtlasSource",
+                    "Assets/Res/UI/AtlasSource.New",
+                    "Assets/Res/UI/Texture",
+                    "Assets/Res/UI/Texture.New" }
+                );
+                if (guids != null && guids.Length > 0)
+                {
+                    Debug.Log($"The resource already exists, name: {tex.name}");
+                    var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                    Sprite sprite = (Sprite)AssetDatabase.LoadAssetAtPath(path, typeof(Sprite));
+                    callBack?.Invoke(sprite);
+                }
+                else
+                {
+                    string path = Path.Combine(psdUi.ResourcesPath, tex.name + ".png");
+                    File.WriteAllBytes(path, tex.EncodeToPNG());
+                    UnityEngine.Object.DestroyImmediate(tex);
+                    psdUi.LoadSpriteAction += () =>
                     {
-                        callBack?.Invoke(sprite);
-                    }
-                };
+                        var sprite = psdUi.LoadSprite(path);
+                        if (sprite != null)
+                        {
+                            callBack?.Invoke(sprite);
+                        }
+                    };
+                }
             }
-
         }
         static Sprite LoadSprite(this UiImportSetting psdUi, string path)
         {
@@ -639,8 +678,6 @@ namespace QTool.Psd2Ui
             return tex;
         }
     }
-    #endregion
-
 
     public static class RectTransformExtend
     {
@@ -680,4 +717,5 @@ namespace QTool.Psd2Ui
         }
 
     }
+    #endregion
 }

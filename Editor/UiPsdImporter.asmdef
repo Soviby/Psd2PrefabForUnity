@@ -1,8 +1,8 @@
 {
     "name": "UiPsdImporter",
-    "rootNamespace": "",
     "references": [
-        "GUID:c522c64a859e42f41a3366907610963e"
+        "GUID:c522c64a859e42f41a3366907610963e",
+        "GUID:997f003cfffd9ec4fae70c0ac9b0ec2b"
     ],
     "includePlatforms": [
         "Editor"
